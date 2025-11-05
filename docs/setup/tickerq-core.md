@@ -26,7 +26,10 @@ services.AddTickerQ(opt =>
   // Set your class that implements ITickerExceptionHandler.  
   opt.SetExceptionHandler<MyExceptionHandlerClass>();
   // Set the max thread concurrency for Ticker (default: Environment.ProcessorCount).
-  opt.SetMaxConcurrency(maxConcurrency: ...);
+  opt.ConfigureScheduler(scheduler =>
+  {
+      scheduler.MaxConcurrency = 10; // Set your desired concurrency
+  });
 });
 
 // Required only if you're targeting .NET Core 3.1 or earlier (.NET 5+ handles this via source generators)
