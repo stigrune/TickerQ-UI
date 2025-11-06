@@ -17,7 +17,7 @@ dotnet add package TickerQ
 ## PackageReference
 
 ```xml
-<PackageReference Include="TickerQ" Version="8.0.0" />
+<PackageReference Include="TickerQ" Version="8.0.0-beta.1" />
 ```
 
 ## Prerequisites
