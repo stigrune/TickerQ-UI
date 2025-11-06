@@ -497,6 +497,5 @@ public class RedisMigrationService
 
 ## Next Steps
 
-- [Performance Optimization](./performance) - Redis performance tuning
-- [Troubleshooting](./troubleshooting) - Common Redis issues
 - [Setup Guide](./setup) - Basic Redis configuration
+- [Distributed Coordination](./distributed-coordination) - Multi-node coordination

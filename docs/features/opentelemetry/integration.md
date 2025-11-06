@@ -615,6 +615,5 @@ public class JobTypeSampler : Sampler
 
 ## Next Steps
 
-- [Tracing Configuration](./tracing) - Configure distributed tracing
-- [Metrics Setup](./metrics) - Monitor job performance
-- [Exporters Guide](./exporters) - Configure observability platforms
+- [OpenTelemetry Overview](../opentelemetry) - Learn about OpenTelemetry features
+- [Dashboard Integration](../dashboard) - Monitor jobs with the dashboard

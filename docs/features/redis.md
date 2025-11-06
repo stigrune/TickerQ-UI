@@ -13,14 +13,6 @@ Basic Redis configuration and integration with TickerQ.
 ### [Distributed Coordination](./redis/distributed-coordination)
 Multi-node coordination, leader election, and distributed locking.
 
-### [Caching](./redis/caching)
-Distributed caching strategies and cache management.
-
-### [Performance](./redis/performance)
-Redis performance optimization, connection pooling, and monitoring.
-
-### [Troubleshooting](./redis/troubleshooting)
-Common Redis issues, debugging, and monitoring.
 
 ### [Integration](./redis/integration)
 Integrate Redis with cloud services, containers, and infrastructure platforms.

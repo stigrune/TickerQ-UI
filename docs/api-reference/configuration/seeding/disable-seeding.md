@@ -179,6 +179,4 @@ Existing jobs continue to run normally.
 - [Automatic Seeding](./automatic-seeding) - Understanding automatic seeding
 - [Custom Seeding](./custom-seeding) - Programmatic seeding alternative
 - [Seeding Overview](./index) - All seeding options
-- [Dashboard](../../../../features/dashboard) - Visual job management
-- [Manager APIs](../../../managers/index) - Programmatic job creation
 

@@ -137,6 +137,4 @@ With OpenTelemetry instrumentation, you'll see:
 
 - [Custom Seeding](./custom-seeding) - Programmatic seeding for more control
 - [Disable Seeding](./disable-seeding) - Prevent automatic seeding
-- [Job Types](../../../../concepts/job-types) - Understanding cron jobs
-- [TickerFunction Attribute](../../../../concepts/job-fundamentals) - Function definition
 

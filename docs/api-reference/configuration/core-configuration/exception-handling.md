@@ -218,5 +218,4 @@ If no exception handler is configured:
 - [Start Mode](./start-mode) - Application startup control
 - [Scheduler Configuration](./scheduler-configuration) - Scheduler options
 - [Core Configuration Overview](./index) - All core configuration options
-- [Error Handling Guide](../../../../concepts/error-handling) - Complete error handling guide
 

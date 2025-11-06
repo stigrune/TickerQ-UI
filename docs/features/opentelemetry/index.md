@@ -4,23 +4,6 @@ TickerQ.Instrumentation.OpenTelemetry provides distributed tracing and structure
 
 ## Sections
 
-### [Installation](./installation)
-Install the OpenTelemetry package and configure instrumentation.
-
-### [Setup](./setup)
-Basic OpenTelemetry configuration and integration with TickerQ.
-
-### [Tracing](./tracing)
-Distributed tracing, spans, and trace correlation across services.
-
-### [Metrics](./metrics)
-Job execution metrics, performance counters, and custom metrics.
-
-### [Logging](./logging)
-Structured logging, log correlation, and centralized log management.
-
-### [Exporters](./exporters)
-Configure exporters for Jaeger, Zipkin, OTLP, and other observability platforms.
 
 ### [Integration](./integration)
 Integrate with observability platforms, APM tools, and monitoring systems.
@@ -64,6 +47,4 @@ builder.Services.AddTickerQ(options =>
 
 ## Next Steps
 
-- [Installation Guide](./installation) - Set up OpenTelemetry instrumentation
-- [Tracing Configuration](./tracing) - Configure distributed tracing
-- [Metrics Setup](./metrics) - Monitor job performance
+- [Integration Guide](./integration) - Integrate with observability platforms

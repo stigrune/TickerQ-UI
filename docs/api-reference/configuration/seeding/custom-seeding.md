@@ -343,6 +343,4 @@ With OpenTelemetry, you'll see separate activities for each seeding operation.
 
 - [Automatic Seeding](./automatic-seeding) - Attribute-based cron job seeding
 - [Disable Seeding](./disable-seeding) - Prevent automatic seeding
-- [Manager APIs](../../../managers/index) - Methods for creating jobs programmatically
-- [Job Fundamentals](../../../../concepts/job-fundamentals) - Understanding job creation
 

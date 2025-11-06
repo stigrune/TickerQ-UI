@@ -212,6 +212,4 @@ efOptions.UseTickerQDbContext<TickerQDbContext>(optionsBuilder =>
 
 - [Connection & Pooling](./connection-pooling) - Database connection settings
 - [Seeding Guide](../seeding/index) - Initialize jobs on startup
-- [Custom Entities](../../../entities/custom-entities) - Creating custom entity types
-- [Entity Framework Guide](../../../../features/entity-framework) - Complete setup guide
 
