@@ -374,6 +374,15 @@ builder.Services.AddTickerQ(options =>
     
     // OpenTelemetry instrumentation
     options.AddOpenTelemetryInstrumentation();
+
+    // (Optional) Explicitly load assemblies that contain [TickerFunction] jobs.
+    // This is only needed in scenarios where assemblies aren't loaded automatically
+    // by the host (for example, some plugin architectures or trimmed deployments).
+    // All assemblies passed here must also reference the TickerQ core library so
+    // the source-generated registration code is available.
+    options.AddTickerQDiscovery<TimeTickerEntity, CronTickerEntity>([
+        typeof(ClassLibrary1.Class1).Assembly
+    ]);
 });
 
 var app = builder.Build();
