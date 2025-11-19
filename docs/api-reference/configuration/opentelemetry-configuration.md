@@ -26,11 +26,6 @@ builder.Services.AddTickerQ(options =>
 using OpenTelemetry;
 using OpenTelemetry.Trace;
 
-builder.Services.AddTickerQ(options =>
-{
-    options.AddOpenTelemetryInstrumentation();
-});
-
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =>
@@ -50,4 +45,3 @@ builder.Services.AddTickerQ(options =>
 
 - [OpenTelemetry Integration](../../features/opentelemetry) - Complete setup guide
 - [Configuration Overview](./index) - All configuration sections
-

@@ -218,7 +218,7 @@ if (ticker.Status == TickerStatus.Failed)
 
 A job is marked as `Cancelled` when:
 - `CancellationToken` is triggered
-- `context.CancelOperation()` is called
+- `context.RequestCancellation()` is called
 
 ```csharp
 [TickerFunction("LongRunningTask")]
@@ -234,14 +234,14 @@ public async Task LongRunningTask(
     
     // Or cancel programmatically
     if (shouldCancel)
-        context.CancelOperation();
+        context.RequestCancellation();
 }
 ```
 
 ### Skipped Status
 
 A job is marked as `Skipped` when:
-- `TerminateExecutionException` is thrown
+- A `TerminateExecutionException` is thrown **without** an explicit status (default)
 - Cron occurrence skips because another is already running
 
 ```csharp
@@ -260,7 +260,7 @@ public async Task PreventDuplicate(
 
 ## TerminateExecutionException
 
-Use `TerminateExecutionException` to skip a job without retrying:
+Use `TerminateExecutionException` to terminate a job **without retrying** and optionally control the final status and exception details stored on the ticker.
 
 ```csharp
 using TickerQ.Exceptions;
@@ -276,10 +276,35 @@ public async Task ProcessData(
         throw new TerminateExecutionException(
             "Processing is already in progress"
         );
-        // Job will be marked as Skipped, no retries
+        // Job will be marked as Skipped (default status), no retries
     }
     
     await ProcessDataAsync(context.Request, cancellationToken);
+}
+```
+
+### Controlling Status and Exception Details
+
+`TerminateExecutionException` has several overloads:
+
+- `TerminateExecutionException(string message)`  
+  Sets status to `TickerStatus.Skipped` and stores `message` as the skip reason.
+- `TerminateExecutionException(TickerStatus status, string message)`  
+  Sets the ticker status to the given value (for example, `Failed`, `Done`, `Cancelled`) and stores `message`.
+- `TerminateExecutionException(string message, Exception innerException)`  
+  Keeps status as `Skipped`, but stores details from `innerException` (message/stack) on the ticker.
+- `TerminateExecutionException(TickerStatus status, string message, Exception innerException)`  
+  Sets a custom status and uses `innerException` to populate exception details.
+
+Example: mark a job as `Failed` with a specific error:
+
+```csharp
+if (!IsConfigurationValid())
+{
+    throw new TerminateExecutionException(
+        TickerStatus.Failed,
+        "Configuration is invalid for this job");
+    // Job will be marked as Failed with the given message, no retries
 }
 ```
 

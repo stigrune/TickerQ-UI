@@ -16,9 +16,6 @@ Configure authentication and authorization for dashboard access.
 ### [Customization](./customization)
 Customize dashboard appearance, themes, and branding.
 
-### [Features](./features)
-Explore dashboard features including job monitoring, management, and real-time updates.
-
 ### [API Integration](./api-integration)
 Integrate dashboard with external APIs and custom endpoints.
 

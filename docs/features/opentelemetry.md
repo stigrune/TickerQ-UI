@@ -1,12 +1,6 @@
 # OpenTelemetry Integration
 
-TickerQ.Instrumentation.OpenTelemetry provides distributed tracing and structured logging for TickerQ jobs, enabling comprehensive observability in distributed systems.
-
-## Sections
-
-
-### [Integration](./opentelemetry/integration)
-Integrate with observability platforms, APM tools, and monitoring systems.
+TickerQ.Instrumentation.OpenTelemetry provides distributed tracing and structured logging for TickerQ jobs via the OpenTelemetry `ActivitySource` API. It focuses solely on emitting TickerQ-specific telemetry; exporters, sampling, and backends are configured in your application's OpenTelemetry pipeline.
 
 ## Quick Start
 
@@ -313,4 +307,3 @@ Monitor trace volume in your observability platform to avoid overwhelming your t
 - [Learn About Dashboard](/features/dashboard)
 - [Configure Entity Framework](/features/entity-framework)
 - [Explore Redis Integration](/features/redis)
-

@@ -4,7 +4,9 @@ Use custom seeding logic to programmatically create initial jobs with full contr
 
 ## UseTickerSeeder
 
-Configure custom seeding functions for TimeTicker and CronTicker jobs.
+Configure custom seeding functions for TimeTicker and CronTicker jobs. Under the hood, EF Core and the in-memory provider both forward to the same core seeding pipeline.
+
+### EF Core (operational store)
 
 **Method:**
 ```csharp
@@ -13,7 +15,27 @@ TickerQEfCoreOptionBuilder<TTimeTicker, TCronTicker> UseTickerSeeder(
     Func<ICronTickerManager<TCronTicker>, Task> cronTickerAsync);
 ```
 
-## Basic Example
+### Core / In-Memory (no EF)
+
+You can also use `UseTickerSeeder` directly on the core `TickerOptionsBuilder`. This works:
+
+- With the in-memory provider only (no EF Core).
+- With EF Core, when you want seeding logic that applies regardless of which persistence provider is active.
+
+**Methods (core):**
+```csharp
+TickerOptionsBuilder<TTimeTicker, TCronTicker> UseTickerSeeder(
+    Func<ITimeTickerManager<TTimeTicker>, Task> timeSeeder);
+
+TickerOptionsBuilder<TTimeTicker, TCronTicker> UseTickerSeeder(
+    Func<ICronTickerManager<TCronTicker>, Task> cronSeeder);
+
+TickerOptionsBuilder<TTimeTicker, TCronTicker> UseTickerSeeder(
+    Func<ITimeTickerManager<TTimeTicker>, Task> timeSeeder,
+    Func<ICronTickerManager<TCronTicker>, Task> cronSeeder);
+```
+
+## Basic Example (EF Core)
 
 ```csharp
 builder.Services.AddTickerQ(options =>
@@ -54,7 +76,7 @@ builder.Services.AddTickerQ(options =>
 });
 ```
 
-## Seeding with Request Data
+## Seeding with Request Data (EF Core)
 
 Include serialized request data in seeded jobs:
 
@@ -97,7 +119,7 @@ efOptions.UseTickerSeeder(
 );
 ```
 
-## Seeding Multiple Jobs
+## Seeding Multiple Jobs (EF Core)
 
 Seed multiple jobs in a single seeding function:
 
@@ -147,6 +169,36 @@ efOptions.UseTickerSeeder(
         await cronManager.AddBatchAsync(cronJobs);
     }
 );
+
+## Core / In-Memory Seeding Example
+
+Use `UseTickerSeeder` directly on `AddTickerQ` when you are not using `AddOperationalStore` (in-memory), or when you want seeding logic that applies regardless of persistence provider:
+
+```csharp
+builder.Services.AddTickerQ(options =>
+{
+    // Optional: disable auto seeding of code-defined cron tickers
+    options.IgnoreSeedDefinedCronTickers();
+
+    options.UseTickerSeeder(
+        async timeManager =>
+        {
+            await timeManager.AddAsync(new TimeTickerEntity
+            {
+                Function = "WarmUpCache",
+                ExecutionTime = DateTime.UtcNow.AddMinutes(1)
+            });
+        },
+        async cronManager =>
+        {
+            await cronManager.AddAsync(new CronTickerEntity
+            {
+                Function = "HealthCheck",
+                Expression = "0 */5 * * * *" // Every 5 minutes
+            });
+        });
+});
+```
 ```
 
 ## Conditional Seeding
@@ -343,4 +395,3 @@ With OpenTelemetry, you'll see separate activities for each seeding operation.
 
 - [Automatic Seeding](./automatic-seeding) - Attribute-based cron job seeding
 - [Disable Seeding](./disable-seeding) - Prevent automatic seeding
-

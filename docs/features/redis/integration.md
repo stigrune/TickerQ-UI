@@ -498,4 +498,3 @@ public class RedisMigrationService
 ## Next Steps
 
 - [Setup Guide](./setup) - Basic Redis configuration
-- [Distributed Coordination](./distributed-coordination) - Multi-node coordination

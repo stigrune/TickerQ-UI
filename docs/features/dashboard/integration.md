@@ -18,7 +18,10 @@ public class Startup
             options.AddDashboard(dashboardOptions =>
             {
                 dashboardOptions.SetBasePath("/admin/jobs");
-                dashboardOptions.RequireAuthentication = true;
+                // Use one of the auth helpers from DashboardOptionsBuilder:
+                // dashboardOptions.WithBasicAuth("admin", "password");
+                // dashboardOptions.WithApiKey("your-api-key");
+                // dashboardOptions.WithHostAuthentication();
             });
         });
     }
@@ -53,7 +56,7 @@ builder.Services.AddTickerQ(options =>
     options.AddDashboard(dashboardOptions =>
     {
         dashboardOptions.SetBasePath("/dashboard");
-        dashboardOptions.EnableSignalR = true; // Works with Blazor SignalR
+        // SignalR is configured automatically by the dashboard package.
     });
 });
 
@@ -114,7 +117,8 @@ builder.Services.AddTickerQ(options =>
     options.AddDashboard(dashboardOptions =>
     {
         dashboardOptions.SetBasePath(builder.Configuration["TickerQ:Dashboard:BasePath"]);
-        dashboardOptions.RequireHttps = builder.Configuration.GetValue<bool>("TickerQ:Dashboard:RequireHttps");
+        // For HTTPS / reverse proxy scenarios, rely on standard ASP.NET Core
+        // forwarded headers and HSTS configuration.
     });
 });
 ```
@@ -133,7 +137,6 @@ builder.Services.AddTickerQ(options =>
     options.AddDashboard(dashboardOptions =>
     {
         dashboardOptions.SetBasePath("/jobs");
-        dashboardOptions.TrustProxyHeaders = true; // For AWS ALB
     });
 });
 
@@ -167,7 +170,6 @@ builder.Services.AddTickerQ(options =>
     options.AddDashboard(dashboardOptions =>
     {
         dashboardOptions.SetBasePath("/scheduler");
-        dashboardOptions.EnableCloudRunIntegration = true;
     });
 });
 ```
@@ -211,7 +213,6 @@ builder.Services.AddTickerQ(options =>
     options.AddDashboard(dashboardOptions =>
     {
         dashboardOptions.SetBasePath("/jobs");
-        dashboardOptions.PathBase = "/jobs"; // Match Nginx location
     });
 });
 ```
@@ -267,9 +268,9 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.RequiredClaim = "scope";
-        dashboardOptions.RequiredClaimValue = "read:jobs";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
+        // Protect routes using your normal ASP.NET Core authorization policies.
     });
 });
 ```
@@ -297,8 +298,9 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.RequiredRole = "TickerQAdmin";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
+        // Apply role-based authorization via your host app.
     });
 });
 ```
@@ -314,8 +316,7 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.EnableTelemetry = true;
-        dashboardOptions.TelemetryProvider = "ApplicationInsights";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
     });
 });
 ```
@@ -329,16 +330,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.EnableMetrics = true;
-        dashboardOptions.MetricsEndpoint = "/metrics";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
     });
-});
-
-// Expose Prometheus metrics
-app.MapGet("/metrics", async context =>
-{
-    var metrics = context.RequestServices.GetRequiredService<IMetricsLogger>();
-    await context.Response.WriteAsync(await metrics.GetMetricsAsync());
 });
 ```
 

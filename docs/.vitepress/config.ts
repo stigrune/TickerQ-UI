@@ -27,7 +27,7 @@ export default defineConfig({
       { text: 'API Reference', link: '/api-reference/managers/index' },
       { text: 'Examples', link: '/examples/complete-example' },
       { 
-        text: 'v8.0-beta', 
+        text: 'v8+', 
         items: [
           { text: 'v2.5.x (Legacy)', link: 'https://v2.tickerq.net' }
         ]
@@ -53,6 +53,9 @@ export default defineConfig({
               items: [
                 { text: 'Job Types', link: '/concepts/job-types' },
                 { text: 'Job Fundamentals', link: '/concepts/job-fundamentals' },
+                { text: 'Job Chaining', link: '/concepts/job-chaining' },
+                { text: 'Job Priorities', link: '/concepts/job-priorities' },
+                { text: 'Constructor Injection', link: '/concepts/constructor-injection' },
                 { text: 'Error Handling', link: '/concepts/error-handling' }
               ]
             }
@@ -76,10 +79,7 @@ export default defineConfig({
                     { text: 'Custom Entities', link: '/features/entity-framework/setup/custom-entities' }
                   ]
                 },
-                { text: 'Migrations', link: '/features/entity-framework/migrations' },
-                { text: 'Database Operations', link: '/features/entity-framework/database-operations' },
-                { text: 'Performance', link: '/features/entity-framework/performance' },
-                { text: 'Best Practices', link: '/features/entity-framework/best-practices' }
+                { text: 'Migrations', link: '/features/entity-framework/migrations' }
               ]
             },
             {
@@ -89,21 +89,19 @@ export default defineConfig({
                 { text: 'Installation', link: '/features/dashboard/installation' },
                 { text: 'Setup', link: '/features/dashboard/setup' },
                 { text: 'Authentication', link: '/features/dashboard/authentication' },
-                { text: 'Integration', link: '/features/dashboard/integration' }
+                { text: 'Screenshots', link: '/features/dashboard#dashboard-screenshots' }
               ]
             },
             {
               text: 'Redis Caching',
               items: [
-                { text: 'Overview', link: '/features/redis' },
-                { text: 'Integration', link: '/features/redis/integration' }
+                { text: 'Overview', link: '/features/redis' }
               ]
             },
             {
               text: 'OpenTelemetry',
               items: [
-                { text: 'Overview', link: '/features/opentelemetry' },
-                { text: 'Integration', link: '/features/opentelemetry/integration' }
+                { text: 'Overview', link: '/features/opentelemetry' }
               ]
             }
           ]
@@ -134,6 +132,8 @@ export default defineConfig({
           text: 'API Reference',
           collapsed: false,
           items: [
+            { text: 'Attributes', link: '/api-reference/attributes' },
+            { text: 'Diagnostics', link: '/api-reference/diagnostics' },
             {
               text: 'Managers',
               items: [

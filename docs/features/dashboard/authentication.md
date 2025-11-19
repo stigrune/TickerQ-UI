@@ -28,7 +28,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
     });
 });
 ```
@@ -48,8 +49,9 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.LoginPath = "/Account/Login";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
+        // Use your app's normal cookie login path.
     });
 });
 ```
@@ -67,8 +69,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.RequiredRole = "JobManager";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
     });
 });
 ```
@@ -101,9 +103,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.AuthorizationPolicy = "DashboardAccess";
-        dashboardOptions.JobCreationPolicy = "JobCreation";
-        dashboardOptions.JobDeletionPolicy = "JobDeletion";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
     });
 });
 ```
@@ -150,9 +151,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireApiKey = true;
-        dashboardOptions.ApiKey = "your-secure-api-key";
-        dashboardOptions.ApiKeyHeaderName = "X-TickerQ-Key";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithApiKey("your-secure-api-key");
     });
 });
 ```
@@ -215,8 +215,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.RequiredRole = "TickerQ.Admin";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
     });
 });
 ```
@@ -240,58 +240,8 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.AllowedDomains = new[] { "yourcompany.com" };
-    });
-});
-```
-
-## Security Best Practices
-
-### HTTPS Enforcement
-
-```csharp
-builder.Services.AddHsts(options =>
-{
-    options.Preload = true;
-    options.IncludeSubDomains = true;
-    options.MaxAge = TimeSpan.FromDays(365);
-});
-
-app.UseHsts();
-app.UseHttpsRedirection();
-```
-
-### Content Security Policy
-
-```csharp
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.Add("Content-Security-Policy", 
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';");
-    await next();
-});
-```
-
-### Rate Limiting
-
-```csharp
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("DashboardPolicy", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 100;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-    });
-});
-
-app.UseRateLimiter();
-
-builder.Services.AddTickerQ(options =>
-{
-    options.AddDashboard(dashboardOptions =>
-    {
-        dashboardOptions.RateLimitPolicy = "DashboardPolicy";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
     });
 });
 ```
@@ -307,9 +257,8 @@ if (builder.Environment.IsDevelopment())
     {
         options.AddDashboard(dashboardOptions =>
         {
-            dashboardOptions.RequireAuthentication = false; // Disable for dev
-            dashboardOptions.EnableJobCreation = true;
-            dashboardOptions.EnableJobDeletion = true;
+            dashboardOptions.SetBasePath("/tickerq/dashboard");
+            dashboardOptions.WithNoAuth(); // Disable auth for dev
         });
     });
 }
@@ -324,11 +273,9 @@ if (builder.Environment.IsProduction())
     {
         options.AddDashboard(dashboardOptions =>
         {
-            dashboardOptions.RequireAuthentication = true;
-            dashboardOptions.RequiredRole = "Administrator";
-            dashboardOptions.EnableJobCreation = false;
-            dashboardOptions.EnableJobDeletion = false;
-            dashboardOptions.RequireHttps = true;
+            dashboardOptions.SetBasePath("/tickerq/dashboard");
+            dashboardOptions.WithHostAuthentication();
+            // Apply role-based authorization using your normal ASP.NET Core policies.
         });
     });
 }
@@ -357,4 +304,3 @@ if (builder.Environment.IsProduction())
 
 - [Dashboard Customization](./customization) - Customize UI appearance
 - [API Integration](./api-integration) - Integrate with external systems
-- [Features Overview](./features) - Explore dashboard capabilities

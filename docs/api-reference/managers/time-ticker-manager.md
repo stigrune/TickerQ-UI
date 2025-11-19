@@ -119,7 +119,7 @@ public async Task<IActionResult> RegisterUser(UserRegistrationDto dto)
 public async Task RescheduleJob(Guid jobId, DateTime newExecutionTime)
 {
     // Get job via persistence provider (when using EF Core)
-    var job = await _persistenceProvider.GetTimeTickerByIdAsync(jobId, cancellationToken);
+    var job = await _persistenceProvider.GetTimeTickerById(jobId, cancellationToken);
     
     if (job != null && job.Status == TickerStatus.Idle)
     {
@@ -160,4 +160,3 @@ if (!result.IsSucceeded)
 - [ICronTickerManager](./cron-ticker-manager) - Cron-based job management
 - [TickerResult](./ticker-result) - Result type reference
 - [TimeTickerEntity](../entities/time-ticker-entity) - TimeTicker entity properties
-

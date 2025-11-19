@@ -1,6 +1,6 @@
 # Redis Integration
 
-TickerQ.Caching.StackExchangeRedis provides Redis integration for multi-node distributed coordination, node heartbeat tracking, and distributed caching.
+TickerQ.Caching.StackExchangeRedis provides Redis integration for multi-node coordination (heartbeats + dead-node detection).
 
 ## Sections
 
@@ -9,13 +9,6 @@ Install the Redis package and configure Redis server connection.
 
 ### [Setup](./redis/setup)
 Basic Redis configuration and integration with TickerQ.
-
-### [Distributed Coordination](./redis/distributed-coordination)
-Multi-node coordination, leader election, and distributed locking.
-
-
-### [Integration](./redis/integration)
-Integrate Redis with cloud services, containers, and infrastructure platforms.
 
 ## Quick Start
 
@@ -96,43 +89,6 @@ All active nodes are registered in Redis:
 - **Format**: JSON array of node identifiers
 - **TTL**: 30 days sliding expiration
 
-### Dead Node Detection
-
-TickerQ can detect dead nodes (nodes that stopped sending heartbeats):
-
-```csharp
-// Access Redis context
-var redisContext = serviceProvider.GetRequiredService<ITickerQRedisContext>();
-
-// Get dead nodes
-var deadNodes = await redisContext.GetDeadNodesAsync();
-```
-
-## Distributed Caching
-
-### Get or Set Array
-
-TickerQ provides a caching utility for arrays:
-
-```csharp
-var redisContext = serviceProvider.GetRequiredService<ITickerQRedisContext>();
-
-var cachedData = await redisContext.GetOrSetArrayAsync<MyData>(
-    cacheKey: "my-cache-key",
-    factory: async (ct) =>
-    {
-        // Fetch data if not in cache
-        return await FetchDataFromDatabaseAsync(ct);
-    },
-    expiration: TimeSpan.FromMinutes(5),
-    cancellationToken: cancellationToken
-);
-```
-
-### Cache Key Format
-
-Cache keys follow the pattern:
-```
 {instanceName}{your-key}
 ```
 
@@ -144,26 +100,6 @@ TickerQ automatically registers a background service (`NodeHeartBeatBackgroundSe
 - Notifies dashboard of node status
 
 This service runs automatically when Redis is configured.
-
-## Redis Key Structure
-
-### Heartbeat Keys
-```
-{instanceName}hb:{nodeIdentifier}
-```
-Stores heartbeat payload with timestamp.
-
-### Registry Key
-```
-{instanceName}nodes:registry
-```
-Stores set of all registered node identifiers.
-
-### Custom Cache Keys
-```
-{instanceName}{your-custom-key}
-```
-Your application-specific cache keys.
 
 ## Use Cases
 
@@ -214,28 +150,6 @@ public class HealthCheckService
             HealthyNodes = allNodes.Count - deadNodes.Length
         };
     }
-}
-```
-
-### 3. Cache Warmup
-
-Pre-populate cache on application startup:
-
-```csharp
-[TickerFunction("WarmupCache", cronExpression: "0 0 * * * *")]
-public async Task WarmupCache(
-    TickerFunctionContext context,
-    CancellationToken cancellationToken)
-{
-    var redisContext = context.ServiceScope.ServiceProvider
-        .GetRequiredService<ITickerQRedisContext>();
-    
-    var data = await redisContext.GetOrSetArrayAsync<PopularData>(
-        "popular-items",
-        async (ct) => await FetchPopularItemsAsync(ct),
-        expiration: TimeSpan.FromHours(1),
-        cancellationToken
-    );
 }
 ```
 
@@ -334,4 +248,3 @@ services.AddStackExchangeRedisCache(options =>
 - [Learn About Entity Framework](/features/entity-framework)
 - [Explore Dashboard Features](/features/dashboard)
 - [Set Up OpenTelemetry](/features/opentelemetry)
-

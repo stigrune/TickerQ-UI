@@ -6,9 +6,20 @@ Prevent automatic seeding of cron jobs from `[TickerFunction]` attributes when y
 
 Disable automatic seeding of cron jobs from attributes.
 
+### EF Core (operational store)
+
 **Method:**
 ```csharp
 TickerQEfCoreOptionBuilder<TTimeTicker, TCronTicker> IgnoreSeedDefinedCronTickers();
+```
+
+### Core / In-Memory
+
+You can also disable automatic seeding directly on `TickerOptionsBuilder`, which works for both in-memory and EF Core providers:
+
+**Method:**
+```csharp
+TickerOptionsBuilder<TTimeTicker, TCronTicker> IgnoreSeedDefinedCronTickers();
 ```
 
 ## Basic Usage
@@ -179,4 +190,3 @@ Existing jobs continue to run normally.
 - [Automatic Seeding](./automatic-seeding) - Understanding automatic seeding
 - [Custom Seeding](./custom-seeding) - Programmatic seeding alternative
 - [Seeding Overview](./index) - All seeding options
-

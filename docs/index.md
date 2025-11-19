@@ -2,33 +2,34 @@
 layout: home
 
 hero:
-  name: "TickerQ `v8.0"
-  text: ""
-  tagline: "Enterprise-grade background task scheduler for .NET reflection-free execution, Entity Framework Core persistence, distributed coordination, and real-time monitoring dashboard."
+  name: "TickerQ"
+  text: "Background job scheduler for .NET"
+  tagline: "Reflection-free jobs, EF Core persistence, and a real-time dashboard."
   image:
     src: /tickerq-logo.png
     style:
       max-width: 350px
   actions:
     - theme: brand
-      text: Get Started
+      text: Quick Start
+      link: /getting-started/quick-start
+    - theme: alt
+      text: Install
       link: /getting-started/installation
     - theme: alt
       text: View on GitHub
       link: https://github.com/Arcenox-co/TickerQ
 
 features:
-  - title: Minimal Core, Maximum Performance
-    details: The core `TickerQ` library is lightweight, reflection-free, and dependency-free—designed to run inside your .NET application with ultra-low overhead and deterministic execution.
-  - title: EF Core Integration with TickerQ.EntityFramework
-    details: Add `TickerQ.EntityFramework` to persist tickers, job states, and execution history in your own database. Built to plug directly into your existing `DbContext` with full support for queries, retries, and cleanup.
-  - title: Visual Control with TickerQ.Dashboard
-    details: Bring visibility to your background processing. The `TickerQ.Dashboard` package provides a ready-to-use, real-time web UI to inspect, manage, and trigger jobs—powered by SignalR and styled with Tailwind.
-  - title: Advanced Scheduling Engine
-    details: Whether it's second-precise `TimeTickers` or flexible `CronTickers`, TickerQ supports both with built-in throttling, cooldown control, and priority-based job queuing.
+  - title: Minimal Core & APIs
+    details: Lightweight, reflection-free scheduler with source-generated handlers, manager APIs, and strongly-typed contexts that runs inside your existing .NET app.
+  - title: Scheduling & Chaining
+    details: Schedule one-off and cron jobs with built-in retries, throttling, priorities, and support for chained parent–child workflows.
+  - title: EF Core Persistence
+    details: Persist jobs, state, and execution history using TickerQ.EntityFrameworkCore, your own DbContext, and configurable seeding.
+  - title: Dashboard & Distributed Operations
+    details: Monitor and control jobs via the real-time dashboard UI and coordinate multiple nodes with optional Redis heartbeats and dead-node cleanup.
 ---
-
-<div class="vp-doc">
 
 ## Our Sponsor
 
@@ -90,6 +91,3 @@ Email
 </div>
 
 </div>
-
-</div>---
-

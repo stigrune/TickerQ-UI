@@ -25,15 +25,6 @@ builder.Services.AddTickerQ(options =>
     {
         // Custom base path
         dashboardOptions.SetBasePath("/admin/jobs");
-        
-        // Enable/disable features
-        dashboardOptions.EnableJobCreation = true;
-        dashboardOptions.EnableJobDeletion = false;
-        dashboardOptions.ShowSystemJobs = true;
-        
-        // Real-time updates
-        dashboardOptions.RefreshInterval = TimeSpan.FromSeconds(5);
-        dashboardOptions.EnableSignalR = true;
     });
 });
 ```
@@ -46,37 +37,22 @@ builder.Services.AddTickerQ(options =>
 dashboardOptions.SetBasePath("/custom/path"); // Default: /tickerq/dashboard
 ```
 
-### Feature Toggles
-
-```csharp
-dashboardOptions.EnableJobCreation = true;    // Allow creating jobs via UI
-dashboardOptions.EnableJobDeletion = true;    // Allow deleting jobs via UI
-dashboardOptions.EnableJobEditing = true;     // Allow editing job properties
-dashboardOptions.ShowSystemJobs = false;      // Hide internal system jobs
-dashboardOptions.ShowJobHistory = true;       // Display execution history
-```
-
-### Real-time Settings
-
-```csharp
-dashboardOptions.RefreshInterval = TimeSpan.FromSeconds(10); // UI refresh rate
-dashboardOptions.EnableSignalR = true;                       // Real-time updates
-dashboardOptions.MaxHistoryEntries = 1000;                   // History limit
-```
+> Note  
+> Older versions of this documentation mentioned feature toggles such as
+> `EnableJobCreation`, `EnableJobDeletion`, `ShowSystemJobs`, `RefreshInterval`,
+> `EnableSignalR`, etc. These properties do **not** exist on `DashboardOptionsBuilder`
+> and have been removed. The current dashboard behavior is controlled primarily
+> by authentication (`WithNoAuth`, `WithBasicAuth`, `WithApiKey`, `WithHostAuthentication`)
+> and by the base path / backend domain configuration.
 
 ## Advanced Configuration
 
 ### Custom Middleware
 
 ```csharp
-app.UseTickerQ(tickerQOptions =>
-{
-    tickerQOptions.UseDashboard("/admin/scheduler", dashboardConfig =>
-    {
-        dashboardConfig.EnableAuthentication = true;
-        dashboardConfig.RequiredRole = "Administrator";
-    });
-});
+// Example of inserting custom middleware around the dashboard branch
+app.UseTickerQ();
+// Any additional middleware can be configured in your normal ASP.NET Core pipeline.
 ```
 
 ### Environment-Specific Settings
@@ -88,15 +64,13 @@ builder.Services.AddTickerQ(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-            dashboardOptions.EnableJobCreation = true;
-            dashboardOptions.EnableJobDeletion = true;
-            dashboardOptions.ShowSystemJobs = true;
+            dashboardOptions.SetBasePath("/tickerq/dashboard");
+            dashboardOptions.WithNoAuth();
         }
         else
         {
-            dashboardOptions.EnableJobCreation = false;
-            dashboardOptions.EnableJobDeletion = false;
-            dashboardOptions.ShowSystemJobs = false;
+            dashboardOptions.SetBasePath("/tickerq/dashboard");
+            dashboardOptions.WithHostAuthentication();
         }
     });
 });
@@ -120,8 +94,9 @@ builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.RequireAuthentication = true;
-        dashboardOptions.AuthorizationPolicy = "DashboardAccess";
+        dashboardOptions.SetBasePath("/tickerq/dashboard");
+        dashboardOptions.WithHostAuthentication();
+        // Protect the dashboard with the "DashboardAccess" policy using your normal middleware.
     });
 });
 ```
@@ -210,11 +185,6 @@ builder.Services.AddHealthChecks()
 - Check WebSocket support
 - Verify CORS configuration
 - Check proxy/load balancer settings
-
-**Performance issues:**
-- Adjust `RefreshInterval`
-- Limit `MaxHistoryEntries`
-- Consider disabling real-time updates for large datasets
 
 ## Next Steps
 

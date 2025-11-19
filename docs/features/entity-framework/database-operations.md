@@ -1,6 +1,6 @@
 # Database Operations
 
-Query, update, and manage TickerQ jobs through Entity Framework Core.
+Use Entity Framework Core to **query** TickerQ jobs, and use TickerQ manager APIs to **create, update, or delete** active jobs so the scheduler is properly notified.
 
 ## Querying Jobs
 
@@ -64,40 +64,59 @@ public async Task<List<TimeTickerEntity>> GetJobsInTimeRangeAsync(
 }
 ```
 
-## Updating Jobs
+## Updating Jobs (via managers)
+
+TickerQ jobs should be updated through the manager APIs so the scheduler, caches, and dashboard are kept in sync. EF Core should only be used to **discover which jobs** you want to act on.
+
+> **Tip:** See [Manager APIs](/api-reference/managers/index) for the full `ITimeTickerManager` / `ICronTickerManager` surface (add, update, delete, batch operations).
 
 ### Update Execution Time
 
 ```csharp
-public async Task<bool> UpdateJobExecutionTimeAsync(Guid jobId, DateTime newTime)
+public class JobUpdateService
 {
-    var job = await _context.Set<TimeTickerEntity>()
-        .FirstOrDefaultAsync(t => t.Id == jobId);
-    
-    if (job != null && job.Status == TickerStatus.Idle)
+    private readonly MyDbContext _context;
+    private readonly ITimeTickerManager<TimeTickerEntity> _timeTickerManager;
+
+    public JobUpdateService(
+        MyDbContext context,
+        ITimeTickerManager<TimeTickerEntity> timeTickerManager)
     {
-        job.ExecutionTime = newTime;
-        await _context.SaveChangesAsync();
-        return true;
+        _context = context;
+        _timeTickerManager = timeTickerManager;
     }
-    
-    return false;
+
+    public async Task<bool> UpdateJobExecutionTimeAsync(Guid jobId, DateTime newTime)
+    {
+        // Read job with EF Core
+        var job = await _context.Set<TimeTickerEntity>()
+            .FirstOrDefaultAsync(t => t.Id == jobId && t.Status == TickerStatus.Idle);
+
+        if (job is null)
+        {
+            return false;
+        }
+
+        // Mutate via manager so scheduler is notified
+        job.ExecutionTime = newTime;
+        var result = await _timeTickerManager.UpdateAsync(job);
+        return result.IsSucceeded;
+    }
 }
 ```
 
-### Update Job Status
+### Cancel a Job
 
 ```csharp
-public async Task MarkJobAsCancelledAsync(Guid jobId)
+public async Task CancelJobAsync(Guid jobId)
 {
     var job = await _context.Set<TimeTickerEntity>()
-        .FirstOrDefaultAsync(t => t.Id == jobId);
-    
-    if (job != null && job.Status == TickerStatus.InProgress)
+        .FirstOrDefaultAsync(t => t.Id == jobId && t.Status == TickerStatus.InProgress);
+
+    if (job is not null)
     {
-        job.Status = TickerStatus.Cancelled;
-        job.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        // Here "cancel" is implemented as delete before execution
+        await _timeTickerManager.DeleteAsync(job.Id);
     }
 }
 ```
@@ -105,26 +124,43 @@ public async Task MarkJobAsCancelledAsync(Guid jobId)
 ### Update Cron Expression
 
 ```csharp
-public async Task UpdateCronExpressionAsync(Guid cronTickerId, string newExpression)
+public class CronUpdateService
 {
-    var cronTicker = await _context.Set<CronTickerEntity>()
-        .FirstOrDefaultAsync(c => c.Id == cronTickerId);
-    
-    if (cronTicker != null)
+    private readonly MyDbContext _context;
+    private readonly ICronTickerManager<CronTickerEntity> _cronTickerManager;
+
+    public CronUpdateService(
+        MyDbContext context,
+        ICronTickerManager<CronTickerEntity> cronTickerManager)
     {
-        cronTicker.Expression = newExpression;
-        cronTicker.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-        
-        // Note: You may want to use manager.UpdateAsync() instead
-        // to trigger recalculation of occurrences
+        _context = context;
+        _cronTickerManager = cronTickerManager;
+    }
+
+    public async Task<bool> UpdateCronExpressionAsync(Guid cronTickerId, string newExpression)
+    {
+        var cron = await _context.Set<CronTickerEntity>()
+            .FirstOrDefaultAsync(c => c.Id == cronTickerId);
+
+        if (cron is null)
+        {
+            return false;
+        }
+
+        cron.Expression = newExpression;
+        cron.UpdatedAt = DateTime.UtcNow;
+
+        var result = await _cronTickerManager.UpdateAsync(cron);
+        return result.IsSucceeded;
     }
 }
 ```
 
-## Deleting Jobs
+## Deleting Jobs (via managers when possible)
 
-### Delete Completed Jobs
+For most application workflows, prefer deleting jobs via manager APIs so the scheduler and dashboard are aware of the removal. Direct EF deletes against TickerQ tables should be reserved for maintenance/cleanup tasks that operate on completed or historical data only.
+
+### Delete Completed Jobs (historical cleanup)
 
 ```csharp
 public async Task<int> DeleteCompletedJobsAsync(DateTime olderThan)
@@ -139,7 +175,7 @@ public async Task<int> DeleteCompletedJobsAsync(DateTime olderThan)
 }
 ```
 
-### Delete Old Occurrences
+### Delete Old Occurrences (historical cleanup)
 
 ```csharp
 public async Task<int> CleanupOldOccurrencesAsync(int olderThanDays = 30)
@@ -156,56 +192,29 @@ public async Task<int> CleanupOldOccurrencesAsync(int olderThanDays = 30)
 }
 ```
 
-### Delete Failed Jobs
+### Delete Failed Jobs (active jobs via manager)
 
 ```csharp
 public async Task<int> DeleteFailedJobsAsync(DateTime olderThan)
 {
-    var failedJobs = await _context.Set<TimeTickerEntity>()
+    var failedJobIds = await _context.Set<TimeTickerEntity>()
         .Where(t => t.Status == TickerStatus.Failed 
                     && t.ExecutedAt < olderThan)
+        .Select(t => t.Id)
         .ToListAsync();
-    
-    _context.Set<TimeTickerEntity>().RemoveRange(failedJobs);
-    return await _context.SaveChangesAsync();
+
+    foreach (var jobId in failedJobIds)
+    {
+        await _timeTickerManager.DeleteAsync(jobId);
+    }
+
+    return failedJobIds.Count;
 }
 ```
 
 ## Bulk Operations
 
-### Bulk Status Update
-
-```csharp
-public async Task<int> BulkUpdateStatusAsync(
-    List<Guid> jobIds, TickerStatus newStatus)
-{
-    var jobs = await _context.Set<TimeTickerEntity>()
-        .Where(t => jobIds.Contains(t.Id))
-        .ToListAsync();
-    
-    foreach (var job in jobs)
-    {
-        job.Status = newStatus;
-        job.UpdatedAt = DateTime.UtcNow;
-    }
-    
-    return await _context.SaveChangesAsync();
-}
-```
-
-### Bulk Delete
-
-```csharp
-public async Task<int> BulkDeleteJobsAsync(List<Guid> jobIds)
-{
-    var jobs = await _context.Set<TimeTickerEntity>()
-        .Where(t => jobIds.Contains(t.Id))
-        .ToListAsync();
-    
-    _context.Set<TimeTickerEntity>().RemoveRange(jobs);
-    return await _context.SaveChangesAsync();
-}
-```
+For bulk operations, follow the same pattern: discover job IDs via EF Core, then call manager APIs for the actual mutations. This keeps the scheduler state consistent and ensures dashboard updates are propagated.
 
 ## Complex Queries
 
@@ -327,4 +336,3 @@ TickerQ creates indexes on commonly queried fields. Ensure your queries use inde
 - [Performance](./performance) - Optimization guide
 - [Best Practices](./best-practices) - Production recommendations
 - [Manager APIs](/api-reference/managers/index) - Programmatic job management
-

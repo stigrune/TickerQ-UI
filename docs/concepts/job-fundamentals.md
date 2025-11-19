@@ -1,6 +1,9 @@
 # Job Fundamentals
 
-This guide covers the fundamental concepts of TickerQ jobs, including job chaining, priorities, and advanced scheduling patterns.
+This guide covers the fundamental concepts of TickerQ jobs at a high level. For focused guides on specific topics, see:
+
+- [Job Priorities](/concepts/job-priorities)
+- [Constructor Injection & TickerQConstructor](/concepts/constructor-injection)
 
 ## Job Function Basics
 
@@ -32,7 +35,7 @@ public class TickerFunctionContext
     public string FunctionName { get; }        // Function name
     public CronOccurrenceOperations CronOccurrenceOperations { get; } // Cron-specific operations
     
-    public void CancelOperation()               // Cancel the current job
+    public void RequestCancellation()          // Request cancellation for the current job
 }
 ```
 
@@ -51,150 +54,15 @@ public async Task ProcessOrder(
 }
 ```
 
-## Job Priorities
+## Job Priorities (Overview)
 
-Control execution order with priorities. Jobs with higher priority execute first.
+TickerQ jobs can be tagged with a priority via `TickerTaskPriority`. Currently, the scheduler treats `LongRunning` specially (runs on a separate long-running path), while `High`, `Normal`, and `Low` are primarily metadata for observability and future scheduling strategies.
 
-### Priority Levels
+See [Job Priorities](/concepts/job-priorities) for details and examples.
 
-```csharp
-public enum TickerTaskPriority
-{
-    LongRunning,  // Executes in separate thread pool
-    High,         // Highest priority
-    Normal,       // Default priority
-    Low           // Lowest priority
-}
-```
+## Job Chaining (Overview)
 
-### Setting Priority
-
-#### In Function Attribute
-
-```csharp
-[TickerFunction("CriticalTask", taskPriority: TickerTaskPriority.High)]
-public async Task CriticalTask(
-    TickerFunctionContext context,
-    CancellationToken cancellationToken)
-{
-    // This job will execute before Normal and Low priority jobs
-}
-```
-
-#### When Scheduling (TimeTicker Only)
-
-Priority is determined by the function's attribute setting. TimeTickers inherit priority from their function definition.
-
-### Priority Execution Order
-
-1. **High Priority** jobs execute first
-2. **Normal Priority** jobs execute next
-3. **Low Priority** jobs execute last
-4. **LongRunning** jobs execute in a separate thread pool
-
-## Job Chaining
-
-TimeTicker supports parent-child job relationships, allowing you to create complex workflows.
-
-### Child Job Conditions
-
-Child jobs can run based on parent job status:
-
-```csharp
-public enum RunCondition
-{
-    OnSuccess,              // Run if parent succeeds
-    OnFailure,              // Run if parent fails
-    OnCancelled,            // Run if parent is cancelled
-    OnFailureOrCancelled,   // Run if parent fails or cancelled
-    OnAnyCompletedStatus,   // Run after parent completes (any status)
-    InProgress              // Run in parallel with parent
-}
-```
-
-### Creating Child Jobs
-
-#### Method 1: Direct Child Assignment
-
-```csharp
-var parent = new TimeTickerEntity
-{
-    Function = "ProcessOrder",
-    ExecutionTime = DateTime.UtcNow,
-    // ... other properties
-};
-
-var child = new TimeTickerEntity
-{
-    Function = "SendConfirmationEmail",
-    ExecutionTime = DateTime.UtcNow.AddMinutes(1),
-    ParentId = parent.Id,
-    RunCondition = RunCondition.OnSuccess,
-    Request = TickerHelper.CreateTickerRequest(new EmailRequest { /* ... */ })
-};
-
-parent.Children.Add(child);
-
-await _timeTickerManager.AddAsync(parent);
-```
-
-#### Method 2: Using Fluent Chain Builder
-
-```csharp
-using TickerQ.Utilities.Managers;
-
-var job = FluentChainTickerBuilder<TimeTickerEntity>.BeginWith(parent =>
-    {
-        parent.SetFunction("ProcessOrder")
-              .SetExecutionTime(DateTime.UtcNow)
-              .SetRequest(new OrderRequest { OrderId = 123 });
-    })
-    .WithFirstChild(child =>
-    {
-        child.SetFunction("SendEmail")
-             .SetRunCondition(RunCondition.OnSuccess)
-             .SetExecutionTime(DateTime.UtcNow.AddMinutes(1));
-    })
-    .WithSecondChild(child =>
-    {
-        child.SetFunction("UpdateInventory")
-             .SetRunCondition(RunCondition.OnSuccess)
-             .SetExecutionTime(DateTime.UtcNow.AddMinutes(2));
-    })
-    .Build();
-
-await _timeTickerManager.AddAsync(job);
-```
-
-### Child Job Execution
-
-Child jobs execute based on their `RunCondition`:
-
-- **InProgress**: Runs in parallel with parent (when parent status is `InProgress`)
-- **OnSuccess**: Runs after parent succeeds (status `Done` or `DueDone`)
-- **OnFailure**: Runs after parent fails
-- **OnCancelled**: Runs if parent is cancelled
-- **OnFailureOrCancelled**: Runs if parent fails or is cancelled
-- **OnAnyCompletedStatus**: Runs after parent reaches any terminal state
-
-### Nested Children (Grandchildren)
-
-The fluent builder supports up to 3 levels:
-- Root (parent)
-- Children (max 5)
-- Grandchildren (max 5 per child)
-
-```csharp
-var job = FluentChainTickerBuilder<TimeTickerEntity>
-    .BeginWith(parent => { /* ... */ })
-    .WithFirstChild(child => { /* ... */ })
-        .WithFirstGrandChild(grandchild =>
-        {
-            grandchild.SetFunction("NotifyAdmin")
-                     .SetRunCondition(RunCondition.OnFailure);
-        })
-    .Build();
-```
+TimeTicker supports parent–child job relationships for multi-step workflows. See [Job Chaining](/concepts/job-chaining) for the full guide on run conditions, fluent builders, and nested chains.
 
 ## Job Status Lifecycle
 
@@ -233,7 +101,7 @@ public async Task LongRunningTask(
     
     // Or cancel programmatically
     if (shouldCancel)
-        context.CancelOperation();
+        context.RequestCancellation();
 }
 ```
 

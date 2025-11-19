@@ -329,7 +329,7 @@ Open browser DevTools Console and look for:
 curl http://localhost:5000/tickerq/dashboard
 
 # Test API endpoint
-curl http://localhost:5000/api/tickerq/options
+curl http://localhost:5000/tickerq/dashboard/api/options
 ```
 
 ## Diagnostic Tools
@@ -384,4 +384,3 @@ builder.Services.AddHealthChecks()
 - [Error Handling](/concepts/error-handling) - Comprehensive error handling guide
 - [Dashboard](/features/dashboard) - Real-time monitoring
 - [OpenTelemetry](/features/opentelemetry) - Distributed tracing
-

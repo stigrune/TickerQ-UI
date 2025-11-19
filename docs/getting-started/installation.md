@@ -10,19 +10,53 @@ Install-Package TickerQ
 
 ## .NET CLI
 
-```bash
-dotnet add package TickerQ
+::: code-group
+
+```bash [.NET 8]
+dotnet add package TickerQ --version 8.*
 ```
+
+```bash [.NET 9]
+dotnet add package TickerQ --version 9.*
+```
+
+```bash [.NET 10]
+dotnet add package TickerQ --version 10.*
+```
+
+:::
 
 ## PackageReference
 
-```xml
-<PackageReference Include="TickerQ" Version="8.0.0-beta.1" />
+::: code-group
+
+```xml [.NET 8]
+<PackageReference Include="TickerQ" Version="8.*" />
 ```
+
+```xml [.NET 9]
+<PackageReference Include="TickerQ" Version="9.*" />
+```
+
+```xml [.NET 10]
+<PackageReference Include="TickerQ" Version="10.*" />
+```
+
+:::
+
+## Versioning & .NET Compatibility
+
+TickerQ versions are aligned with the **.NET major version** you target:
+
+- **TickerQ 8.x** → for apps targeting .NET 8
+- **TickerQ 9.x** → for apps targeting .NET 9
+- **TickerQ 10.x** → for apps targeting .NET 10
+
+This applies to all companion packages as well (`TickerQ.EntityFrameworkCore`, `TickerQ.Dashboard`, Redis, OpenTelemetry, etc.): always use the same major version across all TickerQ packages in your solution.
 
 ## Prerequisites
 
-- **.NET 8.0** or later
+- **.NET 8.0, 9.0, or 10.0** (use the matching TickerQ major version)
 - Visual Studio 2022, Rider, or VS Code with C# extension
 
 ## Optional Packages
@@ -33,33 +67,81 @@ Add these based on your requirements:
 
 For database persistence:
 
-```bash
-dotnet add package TickerQ.EntityFrameworkCore
+::: code-group
+
+```bash [.NET 8]
+dotnet add package TickerQ.EntityFrameworkCore --version 8.*
 ```
+
+```bash [.NET 9]
+dotnet add package TickerQ.EntityFrameworkCore --version 9.*
+```
+
+```bash [.NET 10]
+dotnet add package TickerQ.EntityFrameworkCore --version 10.*
+```
+
+:::
 
 ### Dashboard
 
 For the real-time web UI:
 
-```bash
-dotnet add package TickerQ.Dashboard
+::: code-group
+
+```bash [.NET 8]
+dotnet add package TickerQ.Dashboard --version 8.*
 ```
+
+```bash [.NET 9]
+dotnet add package TickerQ.Dashboard --version 9.*
+```
+
+```bash [.NET 10]
+dotnet add package TickerQ.Dashboard --version 10.*
+```
+
+:::
 
 ### Redis
 
 For multi-node coordination:
 
-```bash
-dotnet add package TickerQ.Caching.StackExchangeRedis
+::: code-group
+
+```bash [.NET 8]
+dotnet add package TickerQ.Caching.StackExchangeRedis --version 8.*
 ```
+
+```bash [.NET 9]
+dotnet add package TickerQ.Caching.StackExchangeRedis --version 9.*
+```
+
+```bash [.NET 10]
+dotnet add package TickerQ.Caching.StackExchangeRedis --version 10.*
+```
+
+:::
 
 ### OpenTelemetry
 
 For distributed tracing:
 
-```bash
-dotnet add package TickerQ.Instrumentation.OpenTelemetry
+::: code-group
+
+```bash [.NET 8]
+dotnet add package TickerQ.Instrumentation.OpenTelemetry --version 8.*
 ```
+
+```bash [.NET 9]
+dotnet add package TickerQ.Instrumentation.OpenTelemetry --version 9.*
+```
+
+```bash [.NET 10]
+dotnet add package TickerQ.Instrumentation.OpenTelemetry --version 10.*
+```
+
+:::
 
 ## Basic Setup
 
@@ -82,24 +164,7 @@ That's it! TickerQ is now ready to use.
 
 ### Verifying Installation
 
-To verify TickerQ is working correctly:
-
-1. **Check Services are Registered**
-
-```csharp
-// In Program.cs after AddTickerQ()
-var timeManager = app.Services.GetService<ITimeTickerManager<TimeTickerEntity>>();
-var cronManager = app.Services.GetService<ICronTickerManager<CronTickerEntity>>();
-
-if (timeManager != null && cronManager != null)
-{
-    Console.WriteLine("TickerQ services registered successfully");
-}
-```
-
-2. **Test Job Execution**
-
-Create a simple test job:
+To verify TickerQ is working correctly, create a simple test job:
 
 ```csharp
 public class TestJobs
@@ -143,6 +208,11 @@ builder.Services.AddTickerQ(options =>
         scheduler.IdleWorkerTimeOut = TimeSpan.FromMinutes(1); // Idle worker timeout
         scheduler.SchedulerTimeZone = TimeZoneInfo.Utc; // Timezone for scheduling
     });
+    
+    // Optional: configure request serialization
+    // By default, TickerQ stores request payloads as plain UTF-8 JSON bytes.
+    // You can enable GZip compression to reduce storage size (at the cost of CPU).
+    options.UseGZipCompression();
     
     // Set exception handler
     options.SetExceptionHandler<MyExceptionHandler>();

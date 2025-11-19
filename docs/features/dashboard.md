@@ -16,9 +16,6 @@ Configure authentication and authorization for dashboard access.
 ### [Customization](./dashboard/customization)
 Customize dashboard appearance, themes, and branding.
 
-### [Features](./dashboard/features)
-Explore dashboard features including job monitoring, management, and real-time updates.
-
 ### [API Integration](./dashboard/api-integration)
 Integrate dashboard with external APIs and custom endpoints.
 
@@ -130,6 +127,29 @@ options.AddDashboard(dashboardOptions =>
 
 This delegates to your application's authentication middleware (e.g., JWT, Cookies, Identity).
 
+## Dashboard Screenshots
+
+### Overview
+
+![Dashboard overview](/Screenshot_Dashboard.jpeg)
+
+### Time Tickers
+
+![TimeTicker view](/Screenshot_TimeTicker_View.jpeg)
+
+### Cron Tickers
+
+![CronTicker view](/Screenshot_CronTicker_View.jpeg)
+
+### Occurrences
+
+![Cron occurrences view](/Screenshot_Show_Occurrecies.jpeg)
+
+### Create / Update
+
+![Add new TimeTicker](/Screenshot_Add_New_Time_Ticker.jpeg)
+![Update CronTicker](/Screenshot_Update_Cron_Ticker.jpeg)
+
 ## Dashboard Features
 
 ### Real-Time Updates
@@ -160,6 +180,15 @@ View and manage time-based jobs:
 - **Details**: Full job information including request data, retry count, execution history
 - **Filter**: Filter by status, function name, date range
 - **Actions**: Cancel, delete, or manually trigger jobs
+
+### Timezones and Scheduling
+
+- **Scheduler Timezone**: The logical scheduling timezone is configured on the server via `scheduler.SchedulerTimeZone`. All TimeTicker execution times are ultimately stored and evaluated in UTC using this scheduler timezone.
+- **UI Timezone Selector**: The dashboard header includes a timezone selector. By default it uses the server scheduler timezone, but you can choose another display timezone (for example, your browser's local timezone).
+- **Display vs Scheduling**:
+  - All dates and times shown in tables, charts, and details are rendered in the **currently selected UI timezone**.
+  - When you create or update a TimeTicker from the dashboard, the time you enter is interpreted in the **scheduler timezone**, and then converted to UTC on the server. This ensures that `22:00` in the scheduler timezone always runs at exactly `22:00` there, regardless of who is viewing the dashboard or from which timezone.
+- **Editing Existing TimeTickers**: When you open the edit dialog, the stored UTC execution time is converted back to the selected UI timezone for display. After you change the time and save, the server converts the new time from the scheduler timezone to UTC before scheduling it.
 
 ### CronTicker Management
 
@@ -192,52 +221,68 @@ Track job execution:
 
 ## API Endpoints
 
-The dashboard exposes REST API endpoints:
+The dashboard exposes REST API endpoints under the configured base path.
 
-### Get Next Planned Occurrence
-
-```
-GET /api/tickerq/next-occurrence
-```
-
-### Get Options
+Assuming `dashboardOptions.SetBasePath("/tickerq/dashboard");`, the base URL will be:
 
 ```
-GET /api/tickerq/options
+http://localhost:5000/tickerq/dashboard
+```
+
+All API endpoints are relative to `{basePath}/api`.
+
+### Get Dashboard Options
+
+```
+GET {basePath}/api/options
+```
+
+### Get Host Status and Next Ticker
+
+```
+GET {basePath}/api/ticker-host/status
+GET {basePath}/api/ticker-host/next-ticker
 ```
 
 ### Get Machine Jobs
 
 ```
-GET /api/tickerq/machine-jobs
+GET {basePath}/api/ticker/machine/jobs
 ```
 
 ### Get Job Statuses
 
 ```
-GET /api/tickerq/job-statuses/overall
-GET /api/tickerq/job-statuses/past-week
+GET {basePath}/api/ticker/statuses/get
+GET {basePath}/api/ticker/statuses/get-last-week
 ```
 
 ### TimeTicker Operations
 
 ```
-GET    /api/tickerq/timetickers
-GET    /api/tickerq/timetickers/{id}
-POST   /api/tickerq/timetickers
-PUT    /api/tickerq/timetickers/{id}
-DELETE /api/tickerq/timetickers/{id}
+GET    {basePath}/api/time-tickers
+GET    {basePath}/api/time-tickers/paginated
+GET    {basePath}/api/time-tickers/graph-data-range
+GET    {basePath}/api/time-tickers/graph-data
+POST   {basePath}/api/time-ticker/add
+PUT    {basePath}/api/time-ticker/update
+DELETE {basePath}/api/time-ticker/delete
 ```
 
 ### CronTicker Operations
 
 ```
-GET    /api/tickerq/crontickers
-GET    /api/tickerq/crontickers/{id}
-POST   /api/tickerq/crontickers
-PUT    /api/tickerq/crontickers/{id}
-DELETE /api/tickerq/crontickers/{id}
-GET    /api/tickerq/crontickers/{id}/occurrences
+GET    {basePath}/api/cron-tickers
+GET    {basePath}/api/cron-tickers/paginated
+GET    {basePath}/api/cron-tickers/graph-data
+GET    {basePath}/api/cron-tickers/graph-data-range
+GET    {basePath}/api/cron-ticker-occurrences/{cronTickerId}
+GET    {basePath}/api/cron-ticker-occurrences/{cronTickerId}/paginated
+GET    {basePath}/api/cron-ticker-occurrences/{cronTickerId}/graph-data
+POST   {basePath}/api/cron-ticker/add
+PUT    {basePath}/api/cron-ticker/update
+POST   {basePath}/api/cron-ticker/run
+DELETE {basePath}/api/cron-ticker/delete
 ```
 
 ## SignalR Hub
@@ -257,7 +302,7 @@ The dashboard uses SignalR for real-time communication:
 
 The SignalR hub is automatically configured at:
 ```
-{basePath}/hubs/tickerq-notification
+{basePath}/ticker-notification-hub
 ```
 
 ## Customization

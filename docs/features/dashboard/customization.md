@@ -1,331 +1,125 @@
 # Dashboard Customization
 
-Customize the TickerQ Dashboard appearance, themes, and branding to match your application's design.
+TickerQ ships with a prebuilt Vue dashboard that is embedded into your ASP.NET Core application.  
+Customization from your app focuses on backend configuration: routing, CORS, middleware, and response formatting.  
+For visual or component-level changes you must modify the `TickerQ.Dashboard` project directly; the options below cover everything exposed via `DashboardOptionsBuilder`.
 
-## Theme Customization
+## Base Path & Backend Domain
 
-### Custom CSS
+Set the URL where the dashboard is hosted and, if needed, override the backend API domain that the SPA uses when making requests.
 
 ```csharp
 builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.CustomCssPath = "/css/tickerq-custom.css";
-        dashboardOptions.EnableCustomStyling = true;
+        dashboardOptions.SetBasePath("/admin/jobs");            // default: /tickerq/dashboard
+        dashboardOptions.SetBackendDomain("https://api.example.com"); // optional
     });
 });
 ```
 
-### Custom Theme Colors
+## CORS Policy
 
-```css
-/* Custom CSS file */
-:root {
-    --tickerq-primary: #3b82f6;
-    --tickerq-secondary: #64748b;
-    --tickerq-success: #10b981;
-    --tickerq-warning: #f59e0b;
-    --tickerq-error: #ef4444;
-    --tickerq-background: #ffffff;
-    --tickerq-surface: #f8fafc;
-}
-
-.dark {
-    --tickerq-primary: #60a5fa;
-    --tickerq-secondary: #94a3b8;
-    --tickerq-background: #0f172a;
-    --tickerq-surface: #1e293b;
-}
-```
-
-## Branding
-
-### Custom Logo
+If the dashboard is served from a different origin than the backend APIs, configure a named CORS policy for the dashboard endpoints and hub.
 
 ```csharp
 builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(dashboardOptions =>
     {
-        dashboardOptions.BrandingOptions = brandingOptions =>
+        dashboardOptions.SetCorsPolicy(cors =>
         {
-            brandingOptions.LogoUrl = "/images/company-logo.png";
-            brandingOptions.CompanyName = "Your Company";
-            brandingOptions.ShowPoweredBy = false;
-        };
+            cors.WithOrigins("https://dashboard.example.com")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
     });
 });
 ```
 
-### Custom Title and Favicon
+## Middleware Hooks
+
+`DashboardOptionsBuilder` exposes three middleware hooks that let you inject behavior around the dashboard branch:
+
+| Property | Description |
+| --- | --- |
+| `PreDashboardMiddleware` | Runs before static files and routing (good place to add security headers). |
+| `CustomMiddleware` | Runs after auth middleware but before endpoint mapping. |
+| `PostDashboardMiddleware` | Runs after the endpoints are registered. |
 
 ```csharp
-dashboardOptions.BrandingOptions = brandingOptions =>
+options.AddDashboard(dashboardOptions =>
 {
-    brandingOptions.PageTitle = "Job Scheduler - Your Company";
-    brandingOptions.FaviconUrl = "/favicon.ico";
-    brandingOptions.MetaDescription = "Internal job scheduling dashboard";
-};
-```
+    dashboardOptions.PreDashboardMiddleware = app =>
+    {
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers["X-Frame-Options"] = "DENY";
+            await next();
+        });
+    };
 
-## Layout Customization
+    dashboardOptions.CustomMiddleware = app =>
+    {
+        app.Use(async (context, next) =>
+        {
+            Console.WriteLine($"Dashboard request: {context.Request.Path}");
+            await next();
+        });
+    };
 
-### Custom Header
-
-```csharp
-dashboardOptions.LayoutOptions = layoutOptions =>
-{
-    layoutOptions.ShowHeader = true;
-    layoutOptions.HeaderHeight = "60px";
-    layoutOptions.CustomHeaderContent = "<div class='custom-header'>Custom Content</div>";
-};
-```
-
-### Sidebar Configuration
-
-```csharp
-dashboardOptions.LayoutOptions = layoutOptions =>
-{
-    layoutOptions.SidebarWidth = "280px";
-    layoutOptions.CollapsibleSidebar = true;
-    layoutOptions.ShowNavigationBreadcrumbs = true;
-};
-```
-
-## Component Customization
-
-### Job Cards
-
-```css
-.job-card {
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-}
-
-.job-card:hover {
-    transform: translateY(-2px);
-}
-
-.job-card.success {
-    border-left: 4px solid var(--tickerq-success);
-}
-
-.job-card.error {
-    border-left: 4px solid var(--tickerq-error);
-}
-```
-
-### Status Indicators
-
-```css
-.status-indicator {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.status-indicator.running {
-    background-color: #dbeafe;
-    color: #1e40af;
-}
-
-.status-indicator.completed {
-    background-color: #d1fae5;
-    color: #065f46;
-}
-
-.status-indicator.failed {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-```
-
-## Dark Mode Support
-
-### Automatic Theme Detection
-
-```csharp
-dashboardOptions.ThemeOptions = themeOptions =>
-{
-    themeOptions.EnableDarkMode = true;
-    themeOptions.AutoDetectTheme = true;
-    themeOptions.DefaultTheme = "light";
-};
-```
-
-### Custom Dark Mode Styles
-
-```css
-@media (prefers-color-scheme: dark) {
-    .dashboard-container {
-        background-color: var(--tickerq-background);
-        color: #f1f5f9;
-    }
-    
-    .job-card {
-        background-color: var(--tickerq-surface);
-        border-color: #374151;
-    }
-}
-```
-
-## Responsive Design
-
-### Mobile Optimization
-
-```css
-@media (max-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-    }
-    
-    .sidebar.open {
-        transform: translateX(0);
-    }
-}
-```
-
-### Tablet Layout
-
-```css
-@media (min-width: 769px) and (max-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .sidebar {
-        width: 240px;
-    }
-}
-```
-
-## Custom JavaScript
-
-### Dashboard Extensions
-
-```javascript
-// Custom dashboard extensions
-window.TickerQDashboard = {
-    onJobComplete: function(job) {
-        // Custom notification
-        showNotification(`Job ${job.name} completed successfully`);
-    },
-    
-    onJobFailed: function(job, error) {
-        // Custom error handling
-        showErrorDialog(`Job ${job.name} failed: ${error.message}`);
-    },
-    
-    customActions: {
-        'restart-job': function(jobId) {
-            // Custom job restart logic
-            fetch(`/api/jobs/${jobId}/restart`, { method: 'POST' });
-        }
-    }
-};
-```
-
-### Real-time Updates
-
-```javascript
-// Custom SignalR event handlers
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/tickerq/hub")
-    .build();
-
-connection.on("JobStatusChanged", function (jobId, status) {
-    updateJobCard(jobId, status);
-    
-    if (status === 'Completed') {
-        showSuccessAnimation(jobId);
-    }
+    dashboardOptions.PostDashboardMiddleware = app =>
+    {
+        app.Use(async (context, next) =>
+        {
+            await next();
+            // telemetry or logging after dashboard endpoints
+        });
+    };
 });
 ```
 
-## Configuration Examples
+## Dashboard JSON Options
 
-### Corporate Theme
-
-```csharp
-dashboardOptions.BrandingOptions = brandingOptions =>
-{
-    brandingOptions.LogoUrl = "/images/corporate-logo.png";
-    brandingOptions.CompanyName = "Enterprise Corp";
-    brandingOptions.PrimaryColor = "#1f2937";
-    brandingOptions.SecondaryColor = "#6b7280";
-    brandingOptions.ShowPoweredBy = false;
-};
-
-dashboardOptions.LayoutOptions = layoutOptions =>
-{
-    layoutOptions.ShowHeader = true;
-    layoutOptions.HeaderBackgroundColor = "#1f2937";
-    layoutOptions.SidebarBackgroundColor = "#374151";
-};
-```
-
-### Minimal Theme
+Dashboard APIs use their own `JsonSerializerOptions` so your job payload serialization settings do not interfere.  
+If you need to customize JSON behavior (e.g., naming policies or converters) call `ConfigureDashboardJsonOptions`.
 
 ```csharp
-dashboardOptions.ThemeOptions = themeOptions =>
+options.AddDashboard(dashboardOptions =>
 {
-    themeOptions.MinimalMode = true;
-    themeOptions.HideNavigationLabels = true;
-    themeOptions.CompactLayout = true;
-};
-
-dashboardOptions.LayoutOptions = layoutOptions =>
-{
-    layoutOptions.SidebarWidth = "60px";
-    layoutOptions.ShowBreadcrumbs = false;
-    layoutOptions.ShowFooter = false;
-};
-```
-
-## Advanced Customization
-
-### Custom Components
-
-```csharp
-dashboardOptions.ComponentOptions = componentOptions =>
-{
-    componentOptions.CustomComponents = new Dictionary<string, string>
+    dashboardOptions.ConfigureDashboardJsonOptions(json =>
     {
-        ["job-card"] = "/components/CustomJobCard.vue",
-        ["status-indicator"] = "/components/CustomStatusIndicator.vue"
-    };
-};
+        json.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        json.WriteIndented = false;
+        json.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
+});
 ```
 
-### Plugin System
+## Authentication
+
+Use the built-in helpers to control access:
 
 ```csharp
-dashboardOptions.PluginOptions = pluginOptions =>
+options.AddDashboard(dashboardOptions =>
 {
-    pluginOptions.EnablePlugins = true;
-    pluginOptions.PluginDirectory = "/dashboard-plugins";
-    pluginOptions.LoadedPlugins = new[]
-    {
-        "CustomMetrics",
-        "JobAnalytics",
-        "NotificationCenter"
-    };
-};
+    dashboardOptions.WithBasicAuth("admin", "password");
+    // or dashboardOptions.WithApiKey("secret");
+    // or dashboardOptions.WithHostAuthentication();
+    // or dashboardOptions.WithCustomAuth(token => token == "my-token");
+});
 ```
 
-## Next Steps
+You can chain `WithSessionTimeout(minutes)` to control the dashboard session lifetime.
 
-- [Authentication Setup](./authentication) - Secure dashboard access
-- [Integration Guide](./integration) - Framework and platform integration
-- [Features Overview](./features) - Explore dashboard capabilities
+## Summary
+
+- **Base Path & Backend Domain**: `SetBasePath`, `SetBackendDomain`
+- **CORS**: `SetCorsPolicy`
+- **Auth**: `WithNoAuth`, `WithBasicAuth`, `WithApiKey`, `WithHostAuthentication`, `WithCustomAuth`, `WithSessionTimeout`
+- **Middleware Hooks**: `PreDashboardMiddleware`, `CustomMiddleware`, `PostDashboardMiddleware`
+- **JSON Options**: `ConfigureDashboardJsonOptions`
+
+These APIs represent the full surface area available from the backend. For any other customization you must fork or modify the `TickerQ.Dashboard` project itself.
