@@ -2,12 +2,6 @@
 
 TickerQ.Instrumentation.OpenTelemetry provides distributed tracing and structured logging for TickerQ jobs, enabling comprehensive observability in distributed systems.
 
-## Sections
-
-
-### [Integration](./integration)
-Integrate with observability platforms, APM tools, and monitoring systems.
-
 ## Quick Start
 
 ```csharp
@@ -47,4 +41,4 @@ builder.Services.AddTickerQ(options =>
 
 ## Next Steps
 
-- [Integration Guide](./integration) - Integrate with observability platforms
+- Configure exporters in your application (`AddOpenTelemetry`) to send traces to your preferred backend (e.g., Jaeger, Zipkin, OTLP).
