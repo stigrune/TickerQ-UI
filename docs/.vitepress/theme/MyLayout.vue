@@ -41,7 +41,6 @@ provide('toggle-appearance', async ({ clientX: x, clientY: y }: MouseEvent) => {
 
 <template>
   <DefaultTheme.Layout />
-  <ReviewCard />
 </template>
 
 <style>

@@ -19,7 +19,6 @@ hero:
     - theme: alt
       text: View on GitHub
       link: https://github.com/Arcenox-co/TickerQ
-
 features:
   - title: Minimal Core & APIs
     details: Lightweight, reflection-free scheduler with source-generated handlers, manager APIs, and strongly-typed contexts that runs inside your existing .NET app.
