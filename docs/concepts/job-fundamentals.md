@@ -31,6 +31,7 @@ public class TickerFunctionContext
     public Guid Id { get; }                    // Job ID
     public TickerType Type { get; }            // TimeTicker or CronTicker
     public int RetryCount { get; }             // Current retry attempt
+    public DateTime ScheduledFor { get; }      // Intended fire time (UTC)
     public bool IsDue { get; }                 // Whether job is due
     public string FunctionName { get; }        // Function name
     public CronOccurrenceOperations CronOccurrenceOperations { get; } // Cron-specific operations
@@ -38,6 +39,13 @@ public class TickerFunctionContext
     public void RequestCancellation()          // Request cancellation for the current job
 }
 ```
+
+`ScheduledFor` represents the time the job was meant to fire (UTC), not when it actually started executing. This is especially useful for:
+
+- Cron jobs: it reflects the cron boundary (for example, `12:00`, `12:05`, `12:10`).
+- Time tickers: it reflects the scheduled execution time, even if the job starts late.
+
+Prefer `ScheduledFor` when anchoring data queries or business logic to a schedule, and use `DateTime.UtcNow` only when you truly need the current wall-clock time.
 
 ### Typed Request Context
 
