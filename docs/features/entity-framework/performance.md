@@ -60,7 +60,7 @@ TickerQ creates the following indexes automatically:
 
 **TimeTickerEntity:**
 - `IX_TimeTicker_ExecutionTime` - On `ExecutionTime`
-- `IX_TimeTicker_Status_ExecutionTime` - Composite on `Status`, `ExecutionTime`, `Request`
+- `IX_TimeTicker_Status_ExecutionTime` - Composite on `Status`, `ExecutionTime`
 - Indexes on foreign keys (`ParentId`)
 
 **CronTickerEntity:**
@@ -317,4 +317,3 @@ options.AddOperationalStore(efOptions =>
 - [Connection & Pooling](/api-reference/configuration/entity-framework-configuration/connection-pooling) - Detailed pooling configuration
 - [Database Operations](./database-operations) - Querying and managing jobs
 - [Best Practices](./best-practices) - Production recommendations
-

@@ -30,6 +30,19 @@ features:
     details: Monitor and control jobs via the real-time dashboard UI and coordinate multiple nodes with optional Redis heartbeats and dead-node cleanup.
 ---
 
+<div style="margin: 2.5rem 0 1.5rem; width: 100%; padding: 1.5rem 1.75rem; border: 1px solid var(--vp-c-divider); border-radius: 16px; background: linear-gradient(135deg, var(--vp-c-bg-soft) 0%, rgba(103, 123, 255, 0.08) 100%); box-shadow: 0 8px 28px var(--vp-c-shadow); display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; justify-content: space-between; position: relative; overflow: hidden;">
+<div style="position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 35%), radial-gradient(circle at 80% 10%, rgba(82, 101, 255, 0.12), transparent 30%); opacity: 0.8; pointer-events: none;"></div>
+<div style="display: flex; align-items: center; gap: 0.9rem; flex: 1 1 260px; position: relative; z-index: 1;">
+  <div>
+    <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.65rem; background: var(--vp-c-bg); border: 1px solid var(--vp-c-divider); border-radius: 999px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--vp-c-text-2); margin-bottom: 0.35rem;">Enterprise</div>
+    <h3 style="margin: 0; font-size: 1.15rem; color: var(--vp-c-text-1);">Join the TickerQ Enterprise whitelist</h3>
+    <p style="margin: 0.2rem 0 0; color: var(--vp-c-text-2); font-size: 0.95rem; line-height: 1.5;">Request whitelisting to explore our managed Enterprise offering built for teams that need compliance, SLAs, and dedicated support. TickerQ Enterprise adds power for large organizations and high-demand cloud environments.</p>
+    <p style="margin: 0.45rem 0 0; color: var(--vp-c-text-2); font-size: 0.95rem; line-height: 1.6;">TickerQ Core stays forever open-source.</p>
+  </div>
+</div>
+<a href="https://enterprise.tickerq.net" target="_blank" style="position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.85rem 1.4rem; background: linear-gradient(135deg, var(--vp-c-brand) 0%, var(--vp-c-brand-dark) 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; box-shadow: 0 6px 18px rgba(62, 86, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.25); min-width: 200px; text-align: center; transition: transform 0.2s ease, box-shadow 0.2s ease;">Go to enterprise.tickerq.net</a>
+</div>
+
 ## Our Sponsor
 
 *Thank you to our amazing sponsor supporting TickerQ development*
